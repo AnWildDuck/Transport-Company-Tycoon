@@ -103,7 +103,7 @@ class Road_Handler:
                 if not left: img = transform.rotate(img, 90)
                 if not right: img = transform.rotate(img, 270)
 
-            img = transform.scale(img, (int(window_scale), int(window_scale)))
+            img = transform.scale(img, (int(window_scale + 0.5), int(window_scale + 0.5)))
             window.blit(img, (x * window_scale, y * window_scale))
 
             # draw.rect(window, (200, 200, 200), (x * window_scale, y * window_scale, window_scale, window_scale))
