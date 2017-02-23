@@ -1,5 +1,5 @@
 from pygame import *
-import math
+import math, mouse_extras, roads, functions
 
 def run(window_size):
 
@@ -10,6 +10,7 @@ def run(window_size):
 
     grid_width = 20
     grid_lines = 0
+    money = 100000
 
     def event_loop():
         events = event.get()
@@ -31,8 +32,13 @@ def run(window_size):
 
     # Load images
     images = {
-        'background': image.load('images//backgrounds//grassy.png')
     }
+
+    # Initiate Modules
+    road_handler = roads.Road_Handler(grid_width)
+    button_handler = functions.Popups()
+
+    # button_handler.add_button()
 
     # Game loop
     while True:
@@ -60,11 +66,10 @@ def run(window_size):
 
                 if loop.key == K_ESCAPE:
                     grid_lines = abs(grid_lines - 1)
-
             if loop.type == MOUSEBUTTONDOWN:
                 # Scrolling
-                if loop.button == 5: zoom += dt * zoom_speed * 0.5 # / ((zoom + 1) * 5)
-                if loop.button == 4: zoom -= dt * zoom_speed * 0.5 # / ((zoom + 1) * 5)
+                if loop.button == 4: zoom += dt * zoom_speed * 0.5 # / ((zoom + 1) * 5)
+                if loop.button == 5: zoom -= dt * zoom_speed * 0.5 # / ((zoom + 1) * 5)
                 zoom = min(2, max(zoom, 0.2))
 
         # Move map around (adjust offset)
@@ -75,20 +80,26 @@ def run(window_size):
 
         # Set backgrounds
         game_window = Surface((game_window_height, game_window_height))
-        game_window_scale = game_window_height / grid_width
 
-        # Game window
+        main_window.fill(colours['main_window_background'])
         game_window.fill(colours['game_window_background'])
-        # game_window.blit(transform.scale(images['background'], (game_window_height, game_window_height)), (0, 0))
 
-        # Set handy thing
+        # Set handy things
+        scaled_game_size = zoom * game_window_height
         game_scale = game_window_height / grid_width
+        window_scale = scaled_game_size / game_window_height
+
+        window_offset = (window_size[0] - scaled_game_size) / 2 + offset[0], (window_size[1] - scaled_game_size) / 2 + offset[1]
+        mouse_extras.update(window_scale, game_scale, window_offset)
 
         # Base pixel size
-        game_window_size = int(zoom * game_window_height)
-        pixel_size = game_window_height / game_window_size
+        pixel_size = game_window_height / scaled_game_size
+        game_scale = game_window_height / grid_width
 
         # Show the items here
+        road_handler.place_roads()
+        road_handler.show_roads(game_window, game_scale)
+
 
         # Grid lines
         if grid_lines:
@@ -99,19 +110,13 @@ def run(window_size):
                 y *= game_scale
                 draw.line(game_window, (0, 0, 100), (0, y), (game_window_height, y), int(pixel_size * 2 + 0.5))
 
-
-        # Main window
-        main_window.fill(colours['main_window_background'])
-
         # Update screen
-        game_window_size = int(zoom * game_window_height)
-        game_window = transform.scale(game_window, (game_window_size, game_window_size))
+        game_window = transform.scale(game_window, (int(scaled_game_size), int(scaled_game_size)))
 
-        x = (window_size[0] - game_window_size) / 2 + offset[0]
-        y = (window_size[1] - game_window_size) / 2 + offset[1]
+        x = (window_size[0] - scaled_game_size) / 2 + offset[0]
+        y = (window_size[1] - scaled_game_size) / 2 + offset[1]
 
         main_window.blit(game_window, (x, y))
-        display.set_caption(str(game_window_size))
         display.update()
 
 
