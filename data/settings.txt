@@ -1,0 +1,16 @@
+{
+'window': {
+	'size': (400, 400),
+	'game_grid_width': 100,
+	
+	'game_window_width': 'to be set',
+	'game_scale': 'to be set',
+	},
+	
+'grid_size': 100,
+'events': 'to be set',
+
+# Colours
+'window_background': (50, 50, 50),
+'game_background': (100, 255, 100),
+}
