@@ -6,14 +6,11 @@
 	'game_window_width': 'to be set',
 	'game_scale': 'to be set',
 	'pixel_size': 'to be set',
-	'real_game_size': 'to be set',
-	'top_pos': 'to be set',
-	'max_rect': 'to be set',
 	},
 	
 'offset': [0, 0],
 'zoom': 0.9,
-'grid_size': 20,
+'grid_size': 40,
 'events': 'to be set',
 'mouse_rel': 'to be set',
 

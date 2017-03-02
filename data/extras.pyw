@@ -37,7 +37,7 @@ def touching(rect1, rect2):
             if rect1[1] + rect1[3] >= rect2[1]:
 
                 # Is rect1 not too low
-                if rect1[1] <= rect[1] + rect[3]:
+                if rect1[1] <= rect2[1] + rect2[3]:
 
                     # They are touching!
                     return True

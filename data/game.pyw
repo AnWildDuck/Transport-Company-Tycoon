@@ -36,17 +36,20 @@ def run():
         return info
 
     def show_grid_lines(game_window, info):
+        
         for x in range(info['grid_size']):
-            x = info['window']['game_scale'] * x + info['window']['top_pos'][0]
+            x = info['window']['game_scale'] * x
             draw.line(game_window, (50, 0, 0), (int(x), 0), (int(x), int(info['window']['game_surf_width'])), 1)# int(info['window']['pixel_size']))
+
         for y in range(info['grid_size']):
-            y = info['window']['game_scale'] * y + info['window']['top_pos'][1]
-            draw.line(game_window, (50, 0, 0), (0, y), (int(info['window']['game_surf_width']), int(y)), 1)# int(info['window']['pixel_size']))
+            y = info['window']['game_scale'] * y
+            draw.line(game_window, (50, 0, 0), (0, int(y)), (int(info['window']['game_surf_width']), int(y)), 1)# int(info['window']['pixel_size']))
 
     def resize_main(info):
 
         # Window size things
-        info['window']['game_surf_width'] = min(info['window']['size'])
+        info['window']['game_window_width'] = min(info['window']['size'])
+        info['window']['game_surf_width'] = info['window']['game_window_width'] * info['zoom']
         info['window']['game_scale'] = info['window']['game_surf_width'] / info['grid_size']
 
         # The game window
@@ -89,12 +92,14 @@ def run():
 
             # Zoom
             if e.type == MOUSEBUTTONDOWN:
-                if e.button == 5: info['zoom'] += .9 * info['dt'] * info['zoom'] # Zoom in
-                if e.button == 4: info['zoom'] -= .9 * info['dt'] * info['zoom'] # Zoom out
+                zoom_speed = 10
+                if e.button == 4: info['zoom'] += zoom_speed * info['dt'] * info['zoom'] # Zoom in
+                if e.button == 5: info['zoom'] -= zoom_speed * info['dt'] * info['zoom'] # Zoom out
 
                 if e.button == 4 or e.button == 5:
-                    info['zoom'] = max(0.6, info['zoom'])
+                    info['zoom'] = min(max(0.8, info['zoom']), 1.5)
                     info['window']['game_scale'] = info['window']['game_surf_width'] / info['grid_size']
+                    info, main_window, game_window = resize_main(info)
 
         # Move
         mouse_buttons = mouse.get_pressed()
@@ -107,41 +112,24 @@ def run():
         
 
         info = update_pixel_size(info)
-
-        # The size of the shown window (making the surface to the full size was what made it so laggy)
-        # This solution makes things a little confusing (Keeping track of more variables and a little more math) but is worth it
-        info['window']['real_game_size'] = (min(info['window']['game_surf_width'], info['window']['size'][0]),
-                                            min(info['window']['game_surf_width'], info['window']['size'][1]))
-
-        # One of the extra variables needed (Keeps track of where (0, 0) would be on the fully scaled version relitave to (0, 0) on the 'real_game_size'
-        info['window']['top_pos'] = ((info['window']['real_game_size'][0] - info['window']['game_surf_width']) / 2,
-                                     (info['window']['real_game_size'][1] - info['window']['game_surf_width']) / 2)
-
-        # The position and size of the 'real_game_size' window on the fully scaled one
-        info['window']['max_rect'] = (-info['window']['top_pos'][0],
-                                      -info['window']['top_pos'][1],
-                                      info['window']['real_game_size'][0],
-                                      info['window']['real_game_size'][1])
                     
         # Window Background
         main_window.fill(info['window_background'])
+        game_window.fill(info['game_background'])
 
         # Show items
         info['window']['game_surf_width'] = info['window']['game_window_width'] * info['zoom']
-        #game_window = transform.scale(game_window, (int(info['window']['game_surf_width']),) * 2)
-        #game_window = Surface((min(info['window']['game_surf_width'], info['window']['size'][0]), min(info['window']['game_surf_width'], info['window']['size'][1])))
-        game_window = Surface(info['window']['real_game_size'])
-        game_window.fill(info['game_background'])
+        game_window = transform.scale(game_window, (int(info['window']['game_surf_width']),) * 2)
 
         # This sets the name of the window, It is just showing cool info to make sure everythin is a-okay
-        display.set_caption(str(round(info['zoom'], 5)) + '   ' + str(info['window']['top_pos']))
+        display.set_caption(str(round(info['window']['game_scale'], 5)))
 
-        # Position of the 'real_game_size' window on the main window
-        pos = ((info['window']['size'][0] - (info['window']['real_game_size'][0])) / 2 + info['offset'][0],
-            (info['window']['size'][1] - (info['window']['real_game_size'][1])) / 2 + info['offset'][1])
+        # Position of the 'game_window on the main window
+        pos = ((info['window']['size'][0] - (info['window']['game_surf_width'])) / 2 + info['offset'][0],
+               (info['window']['size'][1] - (info['window']['game_surf_width'])) / 2 + info['offset'][1])
 
         # Show grid lines
-        #if hidden_items: show_grid_lines(game_window, info)
+        if hidden_items: show_grid_lines(game_window, info)
 
         # Add the game window to the main
         main_window.blit(game_window, pos)
