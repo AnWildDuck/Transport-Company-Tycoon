@@ -1,4 +1,8 @@
 {
+
+'main_window': 'to be set',
+'game_window': 'to be set',
+
 'window': {
 	'size': (400, 400),
 	
@@ -10,9 +14,13 @@
 	
 'offset': [0, 0],
 'zoom': 0.9,
+'fullscreen': 0,
+'is_fullscreen': 0,
 'grid_size': 40,
+
 'events': 'to be set',
 'mouse_rel': 'to be set',
+'monitor_size': 'to be set',
 
 # Colours
 'window_background': (50, 50, 50),
