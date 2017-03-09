@@ -10,13 +10,15 @@
 	'game_window_width': 'to be set',
 	'game_scale': 'to be set',
 	'pixel_size': 'to be set',
+	'name': 'to be set',
+	'pos': (0, 0), # To be set
 	},
 	
 'offset': [0, 0],
 'zoom': 0.9,
 'fullscreen': 0,
 'is_fullscreen': 0,
-'grid_size': 40,
+'grid_size': 10,
 
 'events': 'to be set',
 'mouse_rel': 'to be set',

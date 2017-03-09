@@ -1,5 +1,5 @@
 from pygame import *
-import extras
+import extras, mouse_extras, roads
 
 # Get the monitor size
 init()
@@ -45,11 +45,11 @@ def run():
         
         for x in range(info['grid_size']):
             x = info['window']['game_scale'] * x
-            draw.line(game_window, (50, 0, 0), (int(x), 0), (int(x), int(info['window']['game_surf_width'])), 1)# int(info['window']['pixel_size']))
+            extras.show_things.append(('line', (50, 0, 0), (int(x), 0), (int(x), int(info['window']['game_surf_width'])), 1))
 
         for y in range(info['grid_size']):
             y = info['window']['game_scale'] * y
-            draw.line(game_window, (50, 0, 0), (0, int(y)), (int(info['window']['game_surf_width']), int(y)), 1)# int(info['window']['pixel_size']))
+            extras.show_things.append(('line', (50, 0, 0), (0, int(y)), (int(info['window']['game_surf_width']), int(y)), 1))
 
 
     def resize_main(info):
@@ -64,8 +64,6 @@ def run():
 
         # The game window
         info['game_window'] = Surface((info['window']['game_window_width'],) * 2)
-
-        print(info['window']['size'])
 
         # The actual window
         if info['fullscreen']:
@@ -89,6 +87,9 @@ def run():
     info = resize_main(info)
     info = update_pixel_size(info)
 
+    # Objects
+    road_handler = roads.Handler()
+
 
     # -----------
     #  Game Loop
@@ -99,7 +100,9 @@ def run():
 
         # dt or delta time is used to make things move at the correct speed when fps changes
         info['dt'] = clock.tick() / 1000
+
         info['events'] = event_loop()
+        mouse_extras.update(info)
 
         for e in info['events']:
 
@@ -128,6 +131,14 @@ def run():
                     info['window']['game_scale'] = info['window']['game_surf_width'] / info['grid_size']
                     info = resize_main(info)
 
+        # Position of the 'game_window on the main window
+        if info['is_fullscreen']: window_size = info['monitor_size']
+        else: window_size = info['window']['size']
+
+        # Updatey things (all needed throughout game loop)
+        info['window']['pos'] = ((window_size[0] - (info['window']['game_surf_width'])) / 2 + info['offset'][0],
+                                 (window_size[1] - (info['window']['game_surf_width'])) / 2 + info['offset'][1])
+
         # Move
         mouse_buttons = mouse.get_pressed()
         info['mouse_rel'] = mouse.get_rel()
@@ -148,24 +159,23 @@ def run():
         info['window']['game_surf_width'] = info['window']['game_window_width'] * info['zoom']
         info['game_window'] = transform.scale(info['game_window'], (int(info['window']['game_surf_width']),) * 2)
 
-        # This sets the name of the window, It is just showing cool info to make sure everythin is a-okay
-        display.set_caption(str(round(info['window']['game_scale'], 5)))
-
-        # Position of the 'game_window on the main window
-        if info['is_fullscreen']: window_size = info['monitor_size']
-        else: window_size = info['window']['size']
-
-        pos = ((window_size[0] - (info['window']['game_surf_width'])) / 2 + info['offset'][0],
-               (window_size[1] - (info['window']['game_surf_width'])) / 2 + info['offset'][1])
-
         # Show grid lines
         if hidden_items: show_grid_lines(info['game_window'], info)
 
+        # Draw lines
+        road_handler.draw(info)
+
+        for img in road_handler.update(info): extras.show_things.append(img)
+        extras.show_everthing(info)
+
         # Add the game window to the main
-        info['main_window'].blit(info['game_window'], pos)
+        info['main_window'].blit(info['game_window'], info['window']['pos'])
 
         # Show fps
         extras.fps_counter(info['main_window'])
+
+        # This sets the name of the window, It is just showing cool info to make sure everythin is a-okay
+        display.set_caption(info['window']['name'])
 
         # Update the screen!
         display.update()
