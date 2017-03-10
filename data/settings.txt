@@ -10,7 +10,7 @@
 	'game_window_width': 'to be set',
 	'game_scale': 'to be set',
 	'pixel_size': 'to be set',
-	'name': 'to be set',
+	'name': 'Transport company Tycoon!',
 	'pos': (0, 0), # To be set
 	},
 	
@@ -23,6 +23,9 @@
 'events': 'to be set',
 'mouse_rel': 'to be set',
 'monitor_size': 'to be set',
+
+'hidden_info': True,
+'hidden_items': True,
 
 # Colours
 'window_background': (50, 50, 50),

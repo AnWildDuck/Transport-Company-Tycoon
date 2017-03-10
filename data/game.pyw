@@ -30,9 +30,6 @@ def run():
     # Setup
     clock = time.Clock()
 
-    # Cool grid lines and stuff
-    hidden_items = True
-
     # game_window_width is the unscaled size, game_surf_width is scaled
     info['window']['game_window_width'] = min(info['window']['size'])
     info['window']['game_surf_width'] = info['window']['game_window_width'] * info['zoom']
@@ -42,7 +39,7 @@ def run():
         return info
 
     def show_grid_lines(game_window, info):
-        
+
         for x in range(info['grid_size']):
             x = info['window']['game_scale'] * x
             extras.show_things.append(('line', (50, 0, 0), (int(x), 0), (int(x), int(info['window']['game_surf_width'])), 1))
@@ -77,7 +74,7 @@ def run():
         return info
 
     # Without this pygame will stop
-    def event_loop():        
+    def event_loop():
         events = event.get()
         for i in events:
             if i.type == QUIT: quit()
@@ -95,7 +92,7 @@ def run():
     #  Game Loop
     # -----------
 
-    
+
     while True:
 
         # dt or delta time is used to make things move at the correct speed when fps changes
@@ -108,11 +105,21 @@ def run():
 
             # Fullscreen
             if e.type == KEYDOWN:
-                if e.key == K_F2:
+                if e.key == K_F10:
 
                     # Update screen
                     info['fullscreen'] = abs(info['fullscreen'] - 1)
                     info = resize_main(info)
+
+                if e.key == K_ESCAPE:
+                    info['fullscreen'] = 0
+                    info = resize_main(info)
+
+                if e.key == K_F2:
+                    info['hidden_info'] = abs(int(info['hidden_info'] - 1))
+
+                if e.key == K_F3:
+                    info['hidden_items'] = abs(int(info['hidden_items'] - 1))
 
             # Resize
             if e.type == VIDEORESIZE:
@@ -142,15 +149,15 @@ def run():
         # Move
         mouse_buttons = mouse.get_pressed()
         info['mouse_rel'] = mouse.get_rel()
-        
+
         # Change the offset
         if key.get_pressed()[K_LCTRL] and mouse_buttons[0] or mouse_buttons[1]:
             info['offset'][0] += info['mouse_rel'][0]
             info['offset'][1] += info['mouse_rel'][1]
-        
+
 
         info = update_pixel_size(info)
-                    
+
         # Window Background
         info['main_window'].fill(info['window_background'])
         info['game_window'].fill(info['game_background'])
@@ -160,7 +167,7 @@ def run():
         info['game_window'] = transform.scale(info['game_window'], (int(info['window']['game_surf_width']),) * 2)
 
         # Show grid lines
-        if hidden_items: show_grid_lines(info['game_window'], info)
+        if info['hidden_items']: show_grid_lines(info['game_window'], info)
 
         # Draw lines
         road_handler.draw(info)
@@ -172,7 +179,10 @@ def run():
         info['main_window'].blit(info['game_window'], info['window']['pos'])
 
         # Show fps
-        extras.fps_counter(info['main_window'])
+        if info['hidden_info']: extras.fps_counter(info['main_window'])
+
+        # Cool info things
+        if info['hidden_info']: extras.show_info(info['main_window'])
 
         # This sets the name of the window, It is just showing cool info to make sure everythin is a-okay
         display.set_caption(info['window']['name'])
