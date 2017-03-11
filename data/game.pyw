@@ -1,5 +1,5 @@
 from pygame import *
-import extras, mouse_extras, roads
+import extras, mouse_extras, roads, popups
 
 # Get the monitor size
 init()
@@ -64,10 +64,14 @@ def run():
 
         # The actual window
         if info['fullscreen']:
+
+            info['window']['in_use_size'] = info['monitor_size']
+
             if not info['is_fullscreen']:
                 info['main_window'] = display.set_mode(window_size, FULLSCREEN); info['is_fullscreen'] = True
 
         else:
+            info['window']['in_use_size'] = info['window']['size']
             info['main_window'] = display.set_mode(info['window']['size'], RESIZABLE)
             info['is_fullscreen'] = False
 
@@ -87,6 +91,8 @@ def run():
     # Objects
     road_handler = roads.Handler()
 
+    # Make popups
+    popups.all['Test'] = popups.New('test1', image.load('images//popup_icons//test.png'), 'A smol test', [])
 
     # -----------
     #  Game Loop
@@ -177,6 +183,9 @@ def run():
 
         # Add the game window to the main
         info['main_window'].blit(info['game_window'], info['window']['pos'])
+
+        # Show popups
+        popups.update(info)
 
         # Show fps
         if info['hidden_info']: extras.fps_counter(info['main_window'])

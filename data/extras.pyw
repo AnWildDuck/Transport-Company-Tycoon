@@ -1,4 +1,28 @@
-import time, pygame
+import time, pygame, math
+
+
+def show_message(info, message, pos, size, colour = (0, 0, 0), backround = (255, 255, 255), margin = 0.2, alpha = 255):
+
+    font = pygame.font.SysFont('arial', int(size))
+    message = font.render(message, 0, colour)
+
+    margin = margin * size
+    mes_rect = message.get_rect()
+
+    new_rect = pos[0], pos[1], mes_rect.width + 2 * margin, mes_rect.height + 2 * margin
+    window = pygame.Surface((new_rect[2], new_rect[3]))
+
+    # Background rectangles
+    window.fill(backround)
+    pygame.draw.rect(window, colour, (0, 0, new_rect[2], new_rect[3]), int(max(1, size / 7)))
+
+    # Message
+    window.blit(message, (margin, margin))
+
+    window.set_alpha(alpha)
+    info['main_window'].blit(window, pos)
+
+
 
 
 show_things = []
@@ -24,10 +48,10 @@ def show_everthing(info):
             name, img, rect, rotation = thing
 
             pos = int(rect[0]), int(rect[1])
-            size = int(rect[2]), int(rect[3])
+            size = math.ceil(rect[2]), math.ceil(rect[3])
 
-            img = pygame.transform.scale(img, size)
             img = pygame.transform.rotate(img, -rotation)
+            img = pygame.transform.scale(img, size)
 
             # Is the rect on the screen
             new_rect = img.get_rect()

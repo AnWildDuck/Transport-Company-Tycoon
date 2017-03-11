@@ -20,41 +20,59 @@ class Handler:
     def draw(self, info):
 
         buttons = mouse.get_pressed()
+        pos = mouse_extras.get_pos()
 
-        if buttons[0] or buttons[2]:
-            pos = mouse_extras.get_pos()
+        if buttons[0] and not key.get_pressed()[K_LCTRL] and not info['mouse_over_popup']:
+            self.add_road(info, pos)
 
-            # Is the mouse even on the game surface
-            if pos[0] >= 0 and pos[1] >= 0:
-                if pos[0] < info['grid_size'] and pos[1] < info['grid_size']:
+        if buttons[2] and not info['mouse_over_popup']:
+            self.remove_road(info, pos)
 
-                    # Is there another road in the way?
-                    okay = True
-                    for stuff in self.roads:
-                        position, outs, rot, name = stuff
-                        if tuple(pos) == tuple(position):
 
-                            # Remove road
-                            if buttons[2]:
-                                index = self.roads.index(stuff)
-                                self.roads.pop(index)
-                                self.update_neighbours(info, position)
 
-                            else:
-                                okay = False
-                                break
+    def remove_road(self, info, pos):
 
-                    if okay and buttons[0]:
-                        # Add roads
+        # Is the mouse even on the game surface
+        if pos[0] >= 0 and pos[1] >= 0:
+            if pos[0] < info['grid_size'] and pos[1] < info['grid_size']:
 
-                        # Add a blank road to the list
-                        self.roads.append((pos, 0, 0, 0))
+                # Is a road there?
+                for stuff in self.roads:
+                    position, outs, rot, name = stuff
+                    if tuple(pos) == tuple(position):
 
-                        # Update the road
-                        self.update_road(pos, info)
-
-                        # Update the roads around it
+                        index = self.roads.index(stuff)
+                        self.roads.pop(index)
                         self.update_neighbours(info, pos)
+                        return
+
+
+    def add_road(self, info, pos):
+
+        # Is the mouse even on the game surface
+        if pos[0] >= 0 and pos[1] >= 0:
+            if pos[0] < info['grid_size'] and pos[1] < info['grid_size']:
+
+                # Is there another road in the way?
+                okay = True
+                for stuff in self.roads:
+                    position, outs, rot, name = stuff
+                    if tuple(pos) == tuple(position):
+
+                        okay = False
+                        break
+
+                if okay:
+                    # Add roads
+
+                    # Add a blank road to the list
+                    self.roads.append((pos, 0, 0, 0))
+
+                    # Update the road
+                    self.update_road(pos, info)
+
+                    # Update the roads around it
+                    self.update_neighbours(info, pos)
 
 
     def update_neighbours(self, info, pos):
@@ -71,11 +89,13 @@ class Handler:
     def get_images(self, info):
         images = []
 
+        width = info['window']['game_scale']
+
         # Format = 'blit', img, rect, rotation
         for position, outs, rotation, img_name in self.roads:
 
-            pos = position[0] * info['window']['game_scale'], position[1] * info['window']['game_scale']
-            rect = pos[0], pos[1], info['window']['game_scale'], info['window']['game_scale']
+            pos = position[0] * width, position[1] * width
+            rect = int(pos[0]), int(pos[1]), width, width
 
             images.append(['blit', self.images[img_name], rect, rotation])
         return images
