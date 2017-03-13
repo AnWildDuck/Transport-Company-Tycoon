@@ -1,5 +1,5 @@
 from pygame import *
-import mouse_extras
+import mouse_extras, popups
 
 
 class Handler:
@@ -17,17 +17,30 @@ class Handler:
     def update(self, info):
         return self.get_images(info)
 
+    def draw_line(self, info):
+        pass
+
     def draw(self, info):
 
+        disable_mouse = abs(int(popups.check_mouse(info)) - 1)
+
+        # Get mouse things
         buttons = mouse.get_pressed()
         pos = mouse_extras.get_pos()
 
-        if buttons[0] and not key.get_pressed()[K_LCTRL] and not info['mouse_over_popup']:
-            self.add_road(info, pos)
+        # Has any mouse button been pressed
+        any_button = False
+        for button in buttons:
+            if button: any_button = True; break
 
-        if buttons[2] and not info['mouse_over_popup']:
-            self.remove_road(info, pos)
+        if not disable_mouse:
+            # Place road
+            if buttons[0] and not key.get_pressed()[K_LCTRL]:
+                self.add_road(info, pos)
 
+            # Remove road
+            if buttons[2]:
+                self.remove_road(info, pos)
 
 
     def remove_road(self, info, pos):
@@ -41,6 +54,7 @@ class Handler:
                     position, outs, rot, name = stuff
                     if tuple(pos) == tuple(position):
 
+                        # Remove it
                         index = self.roads.index(stuff)
                         self.roads.pop(index)
                         self.update_neighbours(info, pos)

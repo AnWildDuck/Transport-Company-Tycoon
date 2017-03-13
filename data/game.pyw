@@ -92,7 +92,19 @@ def run():
     road_handler = roads.Handler()
 
     # Make popups
-    popups.all['Test'] = popups.New('test1', image.load('images//popup_icons//test.png'), 'A smol test', [])
+    popups.all['placing'] = popups.New('placing', image.load('images//popup_icons//road.png'), 'Placing Systems', 0, {
+        'Test1': {
+            'type': 'button',
+            'show_type': 'image',
+            'image': image.load('images//popup_icons//test.png'),
+        },
+        'Test2': {
+            'type': 'button',
+            'show_type': 'image',
+            'image': image.load('images//popup_icons//test.png'),
+        }
+    })
+    popups.update(info)
 
     # -----------
     #  Game Loop
