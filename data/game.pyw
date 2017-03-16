@@ -64,7 +64,6 @@ def run():
 
         # The actual window
         if info['fullscreen']:
-
             info['window']['in_use_size'] = info['monitor_size']
 
             if not info['is_fullscreen']:
@@ -92,18 +91,20 @@ def run():
     road_handler = roads.Handler()
 
     # Make popups
-    popups.all['placing'] = popups.New('placing', image.load('images//popup_icons//road.png'), 'Placing Systems', 0, {
-        'Test1': {
-            'type': 'button',
-            'show_type': 'image',
-            'image': image.load('images//popup_icons//test.png'),
-        },
-        'Test2': {
-            'type': 'button',
-            'show_type': 'image',
-            'image': image.load('images//popup_icons//test.png'),
-        }
-    })
+    popups.all['placing'] = popups.New('placing', image.load('images//popup_icons//road.png'), 'Placing Systems', 0, 0, [
+
+        ('popup', popups.New('Test0', image.load('images//popup_icons//test.png'), 'Test0', 1, 0, [
+            ('popup', popups.New('Test1', image.load('images//popup_icons//test.png'), 'Test1', 2, 0, [])),
+        ])),
+        ('popup', popups.New('Test2', image.load('images//popup_icons//test.png'), 'Test2', 1, 1, [])),
+        ('popup', popups.New('Test3', image.load('images//popup_icons//test.png'), 'Test3', 1, 2, [])),
+        #('popup', popups.New('Test1', image.load('images//popup_icons//test.png'), 'Test1', 0, 1, [
+        #    ('popup', popups.New('Test2', image.load('images//popup_icons//test.png'), 'Test2', 0, 2, [
+        #        ('popup', popups.New('Test3', image.load('images//popup_icons//test.png'), 'Test3', 0, 3, []))
+
+        #    ]))
+        #])),
+    ], base = True)
     popups.update(info)
 
     # -----------

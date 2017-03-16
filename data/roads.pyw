@@ -1,5 +1,5 @@
 from pygame import *
-import mouse_extras, popups
+import mouse_extras, popups, extras
 
 
 class Handler:
@@ -17,23 +17,84 @@ class Handler:
     def update(self, info):
         return self.get_images(info)
 
+    mouse_last = None
     def draw_line(self, info):
-        pass
+
+        # Get mouse position on the game grid
+        mouse_grid = mouse_extras.get_pos()
+
+        # Is the mouse being held down?        
+        if mouse.get_pressed()[0]:
+            
+            # Is this the first click?
+            if not self.mouse_last:
+
+                # Remember this position
+                self.mouse_last = mouse_grid
+
+            # Has the mouse already been clicked?
+            else:
+                # Add rects to show the path
+                path = extras.make_line(self.mouse_last, mouse_grid)
+
+                if len(path) > 1:
+                    if path[0][0] == path[1][0]: rot = 0
+                    else: change = rot = 90
+                else: change = rot = 90
+
+                for pos in path:
+                    scale = info['window']['game_scale']
+
+                    value = 'blit', self.images['straight'], (pos[0] * scale, pos[1] * scale, scale, scale), rot, 150
+                    extras.show_things.append(value)
+
+        # Has the mouse been let go?
+        else:
+
+            # Does it matter? (Were we remembering the position?)
+            if self.mouse_last:
+
+                # Make line between mouse position and where the mouse was first clicked
+                path = extras.make_line(self.mouse_last, mouse_grid)
+
+                # Add to roads
+                for pos in path:
+                    self.add_road(info, pos)
+            
+            # Reset
+            self.mouse_last = None
+
 
     def draw(self, info):
 
+        # This will dictate whether it is okay to draw the roads
         disable_mouse = abs(int(popups.check_mouse(info)) - 1)
 
-        # Get mouse things
-        buttons = mouse.get_pressed()
-        pos = mouse_extras.get_pos()
-
-        # Has any mouse button been pressed
-        any_button = False
-        for button in buttons:
-            if button: any_button = True; break
-
         if not disable_mouse:
+
+            # Draw road
+            # self.draw_single(info)
+            self.draw_line(info)
+            
+            # Remove road
+            if mouse.get_pressed()[2]:
+                self.remove_road(info, mouse_extras.get_pos())
+
+
+    def draw_single(self, info):
+
+        # Is the mouse clicked
+        if mouse.get_pressed():
+
+            # Get mouse things
+            buttons = mouse.get_pressed()
+            pos = mouse_extras.get_pos()
+
+            # Has any mouse button been pressed
+            any_button = False
+            for button in buttons:
+                if button: any_button = True; break
+
             # Place road
             if buttons[0] and not key.get_pressed()[K_LCTRL]:
                 self.add_road(info, pos)

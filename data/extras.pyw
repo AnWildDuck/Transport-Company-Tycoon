@@ -1,9 +1,17 @@
 import time, pygame, math
 
-
+font = None
+font_size = None
 def show_message(info, message, pos, size, colour = (0, 0, 0), backround = (255, 255, 255), margin = 0.2, alpha = 255):
 
-    font = pygame.font.SysFont('arial', int(size))
+    global font, font_size
+    size = size * 0.8
+
+    # Change font if needed
+    if not font_size == size:
+        font_size = size
+        font = pygame.font.SysFont('arial', int(size))
+
     message = font.render(message, 0, colour)
 
     margin = margin * size
@@ -23,7 +31,25 @@ def show_message(info, message, pos, size, colour = (0, 0, 0), backround = (255,
     info['main_window'].blit(window, pos)
 
 
+def blit_alpha(target, source, location, opacity):
+    x = location[0]
+    y = location[1]
+    temp = pygame.Surface((source.get_width(), source.get_height())).convert()
+    temp.blit(target, (-x, -y))
+    temp.blit(source, (0, 0))
+    temp.set_alpha(opacity)
+    target.blit(temp, location)
 
+def on_screen(info, rect):
+
+    if not info['fullscreen']: window_rect = (0, 0, info['window']['size'][0], info['window']['size'][1])
+    else: window_rect = (0, 0, info['monitor_size'][0], info['monitor_size'][1])
+
+    new_rect = rect[0] + info['window']['pos'][0], rect[1] + info['window']['pos'][1], rect[2], rect[3]
+
+    if touching(new_rect, window_rect):
+        return True
+    return False
 
 show_things = []
 def show_everthing(info):
@@ -31,11 +57,6 @@ def show_everthing(info):
     max_things = len(show_things)
 
     shown_things = 0
-
-    if not info['fullscreen']:
-        window_rect = (0, 0, info['window']['size'][0], info['window']['size'][1])
-    else:
-        window_rect = (0, 0, info['monitor_size'][0], info['monitor_size'][1])
 
     # Show all the things
     for thing in show_things:
@@ -45,7 +66,8 @@ def show_everthing(info):
         # Is it an image?
         if thing[0] == 'blit':
 
-            name, img, rect, rotation = thing
+            if len(thing) == 4: name, img, rect, rotation = thing; alpha = False
+            else: name, img, rect, rotation, alpha = thing
 
             pos = int(rect[0]), int(rect[1])
             size = math.ceil(rect[2]), math.ceil(rect[3])
@@ -54,30 +76,48 @@ def show_everthing(info):
             img = pygame.transform.scale(img, size)
 
             # Is the rect on the screen
-            new_rect = img.get_rect()
-            new_rect = rect[0] + info['window']['pos'][0], rect[1] + info['window']['pos'][1], new_rect.width, new_rect.height
+            rect = pos[0], pos[1], size[0], size[1]
 
-            if touching(new_rect, window_rect) or not filter:
+            if on_screen(info, rect):
 
                 # Draw
-                info['game_window'].blit(img, pos)
-                shown_things += 1
+                if alpha:
+                    blit_alpha(info['game_window'], img, pos, alpha)
+                    shown_things += 1
+
+                else:
+                    info['game_window'].blit(img, pos)
+                    shown_things += 1
 
 
         # Is it a line?
         elif thing[0] == 'line':
 
             # Is it visible to the player?
-            top_left = min(thing[2][0], thing[3][0]) + info['window']['pos'][0], min(thing[2][1], thing[3][1]) + info['window']['pos'][1]
-            size = (abs(thing[2][0] - thing[3][0]), abs(thing[2][1] - thing[3][1]))
-
-            thing_rect = (top_left[0], top_left[1], size[0], size[1])
-
-            if touching(window_rect, thing_rect) or not filter:
+            rect = thing[2][0], thing[2][1], thing[2][0] - thing[3][0], thing[2][1] - thing[3][1]
+            if on_screen(info, rect):
 
                 # Draw it
                 pygame.draw.line(info['game_window'], thing[1], thing[2], thing[3])
                 shown_things += 1
+
+        # Is it a rect
+        elif thing[0] == 'rect':
+
+            # Is it visible to the player
+            rect = thing[1]
+            if on_screen(info, rect):
+
+                # Show it
+
+                # Outline
+                if len(thing) >= 4:
+                    pygame.draw.rect(info['game_window'], thing[2], rect, thing[3])
+
+                # No outline
+                else:
+                    pygame.draw.rect(info['game_window'], thing[2], rect)
+
 
     show_things = []
     add_info('Showing ' + str(shown_things) + '/' + str(max_things) + ' items')
@@ -85,15 +125,32 @@ def show_everthing(info):
 
 
 last_time = 0
+frames = 0
+last_fps = 0
+
 pygame.font.init()
 base_font = pygame.font.SysFont(None, 30)
 
-def fps_counter(window):
-    global last_time, base_font
-
+def fps_counter(window, avg = False):
+    global last_time, base_font, frames, last_fps
     this_time = time.time()
-    time_dif = this_time - last_time
-    fps = 1 / time_dif
+
+    if avg:
+
+        if this_time - avg >= last_time:
+            fps = frames * (1 / avg)
+            last_time = this_time
+            frames = 0
+            last_fps = fps
+
+        else:
+            frames += 1
+            fps = last_fps
+
+    else:
+        time_dif = this_time - last_time
+        fps = 1 / time_dif
+
 
     # Message surface
     message = base_font.render(str(int(fps)), 0, (255, 255, 50))
@@ -106,7 +163,8 @@ def fps_counter(window):
     window.blit(message, (margin, margin))
 
     # Update time
-    last_time = this_time
+    if not avg:
+        last_time = this_time
 
 
 info = []
@@ -158,4 +216,76 @@ def touching(rect1, rect2):
 
     # Not touching! (This will only run if return is not already called, return stops the function)
     return False
-            
+
+
+def make_line(pos1, pos2):
+
+    # Get gradient
+    xc = pos1[0] - pos2[0]
+    yc = pos1[1] - pos2[1]
+
+    # Where is the corner pos?
+    if abs(xc) > abs(yc):
+        x = pos2[0]
+        y = pos1[1]
+
+        if xc < 0: change1 = (-1, 0)
+        else: change1 = (1, 0)
+
+
+    else:
+        x = pos1[0]
+        y = pos2[1]
+
+        if yc < 0: change1 = (0, -1)
+        else: change1 = (0, 1)
+
+    path = [pos1]
+    # Add all the points before the corner
+    for val in range(max(abs(xc), abs(yc))):
+
+        last_pos = path[len(path) - 1]
+        this_pos = last_pos[0] - change1[0], last_pos[1] - change1[1]
+
+        path.append(this_pos)
+    return path
+
+
+
+def make_line2(pos1, pos2, dist_method = 1):
+
+    path = [pos1]
+    while True:
+        last_pos = path[len(path) - 1]
+
+        # Is the end already found?
+        if tuple(last_pos) == tuple(pos2): break
+
+        # Used to find the move that gets the closest to the destination        
+        moves = []
+        distances = []
+
+        # What move should be taken to get closer to the desination?
+        for xc, yc in [(0, 1), (0, -1), (1, 0), (-1, 0)]: 
+
+            # Work out new pos
+            this_pos = last_pos[0] + xc, last_pos[1] + yc
+            moves.append(this_pos)
+
+            # Find dist
+            xd = abs(pos2[0] - this_pos[0])
+            yd = abs(pos2[1] - this_pos[1])
+
+            if dist_method == 0: dist = math.sqrt(xd ** 2 + yd ** 2)
+            elif dist_method == 1: dist = xd + yd
+            distances.append(dist)
+
+        # Find min dist and its pos
+        best_dist = min(distances)
+        index = distances.index(best_dist)
+        best_pos = moves[index]
+
+        # Add to path
+        path.append(best_pos)
+
+    return path

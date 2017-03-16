@@ -4,7 +4,7 @@
 'game_window': 'to be set',
 
 'window': {
-	'size': (400, 400),
+	'size': (800, 400),
 	
 	'game_surf_width': 'to be set', # Not scaled
 	'game_window_width': 'to be set',
