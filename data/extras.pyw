@@ -3,6 +3,7 @@ import time, pygame, math
 font = None
 font_size = None
 def show_message(info, message, pos, size, colour = (0, 0, 0), backround = (255, 255, 255), margin = 0.2, alpha = 255):
+    pos = list(pos)
 
     global font, font_size
     size = size * 0.8
@@ -26,8 +27,16 @@ def show_message(info, message, pos, size, colour = (0, 0, 0), backround = (255,
 
     # Message
     window.blit(message, (margin, margin))
-
     window.set_alpha(alpha)
+
+    # Make sure the message is on the window
+    window_size = info['window']['in_use_size']
+    pos[0] = max(pos[0], 0)
+    pos[1] = max(pos[1], 0)
+
+    pos[0] = min(pos[0], window_size[0] - new_rect[2])
+    pos[1] = min(pos[1], window_size[1] - new_rect[3])
+
     info['main_window'].blit(window, pos)
 
 
@@ -72,13 +81,13 @@ def show_everthing(info):
             pos = int(rect[0]), int(rect[1])
             size = math.ceil(rect[2]), math.ceil(rect[3])
 
-            img = pygame.transform.rotate(img, -rotation)
-            img = pygame.transform.scale(img, size)
-
-            # Is the rect on the screen
             rect = pos[0], pos[1], size[0], size[1]
 
+            # Is the rect on the screen
             if on_screen(info, rect):
+
+                img = pygame.transform.rotate(img, -rotation)
+                img = pygame.transform.scale(img, size)
 
                 # Draw
                 if alpha:
@@ -149,8 +158,9 @@ def fps_counter(window, avg = False):
 
     else:
         time_dif = this_time - last_time
-        fps = 1 / time_dif
 
+        if time_dif != 0: fps = 1 / time_dif
+        else: fps = 0
 
     # Message surface
     message = base_font.render(str(int(fps)), 0, (255, 255, 50))

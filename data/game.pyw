@@ -91,20 +91,10 @@ def run():
     road_handler = roads.Handler()
 
     # Make popups
-    popups.all['placing'] = popups.New('placing', image.load('images//popup_icons//road.png'), 'Placing Systems', 0, 0, [
 
-        ('popup', popups.New('Test0', image.load('images//popup_icons//test.png'), 'Test0', 1, 0, [
-            ('popup', popups.New('Test1', image.load('images//popup_icons//test.png'), 'Test1', 2, 0, [])),
-        ])),
-        ('popup', popups.New('Test2', image.load('images//popup_icons//test.png'), 'Test2', 1, 1, [])),
-        ('popup', popups.New('Test3', image.load('images//popup_icons//test.png'), 'Test3', 1, 2, [])),
-        #('popup', popups.New('Test1', image.load('images//popup_icons//test.png'), 'Test1', 0, 1, [
-        #    ('popup', popups.New('Test2', image.load('images//popup_icons//test.png'), 'Test2', 0, 2, [
-        #        ('popup', popups.New('Test3', image.load('images//popup_icons//test.png'), 'Test3', 0, 3, []))
+    # DO NOT DELETE ME
+    popups.all['remove'] = popups.Button('remove', image.load('images//popup_icons//x.png'), image.load('images//popup_icons//x_invert.png'), 'Remove roads', -1, -1, base = True)
 
-        #    ]))
-        #])),
-    ], base = True)
     popups.update(info)
 
     # -----------

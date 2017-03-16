@@ -139,4 +139,59 @@ class New:
         for rect, obj in self.items: rects.append(rect)
         for i in orects: rects.append(i)
         return rects
-            
+
+
+class Button:
+
+    def __init__(self, id, img, img2, name, layer, y, base = False):
+        global width_factor
+
+        self.id = id
+        self.img = img
+        self.img2 = img2
+        self.name = name
+        self.width_factor = width_factor
+        self.y = y
+        self.layer = layer
+        self.clicked = False
+        self.last_click = False
+        self.base = base
+
+
+    def show(self, info):
+
+        width = min(info['window']['in_use_size']) / 10
+        margin = width
+
+        x = margin * (self.layer * 1.5 + 1)
+        y = margin * (self.y * 1.5 + 1)
+
+        if self.layer < 0: x = info['window']['in_use_size'][0] + x - width * 1.5
+        if self.y < 0: y = info['window']['in_use_size'][1] + y - width * 1.5
+
+        if self.clicked: img = self.img2
+        else: img = self.img
+
+        # Transform image
+        img = transform.scale(img, (int(width), int(width)))
+
+        # Show img
+        info['main_window'].blit(img, (x, y))
+
+        # Show message
+        mouse_pos = mouse.get_pos()
+        mouse_rect = (mouse_pos[0], mouse_pos[1], 0, 0)
+
+        # Is the mouse over the item?
+        if extras.touching(mouse_rect, (x, y, width, width)):
+            extras.show_message(info, self.name, mouse_pos, width / 2, colour = (0, 0, 0), backround = (255, 255, 255), margin = 0.2, alpha = 120)
+
+            # Is the item clicked?
+            if mouse_extras.get_states()[0] == -1:
+                self.clicked = abs(int(self.clicked) - 1)
+
+        return (x, y, width, width)
+
+
+    def update(self, info):
+        return [self.show(info)]
