@@ -119,8 +119,15 @@ def show_everthing(info):
 
                 # Show it
 
+                # Alpha
+                if len(thing[2]) == 4:
+                    surf = pygame.Surface(rect[2:])
+                    surf.fill(thing[2])
+                    surf.set_alpha(thing[2][3])
+                    info['game_window'].blit(surf, rect[:2])
+
                 # Outline
-                if len(thing) >= 4:
+                elif len(thing) >= 4:
                     pygame.draw.rect(info['game_window'], thing[2], rect, thing[3])
 
                 # No outline

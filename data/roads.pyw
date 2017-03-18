@@ -77,8 +77,7 @@ class Handler:
             self.draw_line(info)
             
             # Remove road
-            if mouse.get_pressed()[2]:
-                self.remove_road(info, mouse_extras.get_pos())
+            self.remove_section(info)
 
 
     def draw_single(self, info):
@@ -99,9 +98,58 @@ class Handler:
             if buttons[0] and not key.get_pressed()[K_LCTRL]:
                 self.add_road(info, pos)
 
-            # Remove road
-            if buttons[2]:
-                self.remove_road(info, pos)
+
+    last_mouse2 = None
+    def remove_section(self, info):
+
+        new_pos = mouse_extras.get_pos()
+
+        # Is the mouse clicked?
+        if mouse.get_pressed()[2]:
+
+            # Is this the first time
+            if not self.last_mouse2:
+
+                # Set last mouse pos
+                self.last_mouse2 = new_pos
+
+            else:
+                scale = info['window']['game_scale']
+
+                # Make rect
+                x = min(self.last_mouse2[0], new_pos[0])
+                y = min(self.last_mouse2[1], new_pos[1])
+
+                width = abs(self.last_mouse2[0] - new_pos[0]) + 1
+                height = abs(self.last_mouse2[1] - new_pos[1]) + 1
+
+                # Show rect
+                value = 'rect', (x * scale, y * scale, width * scale, height * scale), (255, 100, 100, 100)
+                extras.show_things.append(value)
+
+
+        # Has the mouse been let go
+        else:
+            if self.last_mouse2:
+
+                # Make rect
+                x = min(self.last_mouse2[0], new_pos[0])
+                y = min(self.last_mouse2[1], new_pos[1])
+
+                width = abs(self.last_mouse2[0] - new_pos[0]) + 1
+                height = abs(self.last_mouse2[1] - new_pos[1]) + 1
+
+                # Remove all roads in rect
+                for nx in range(width):
+                    for ny in range(height):
+
+                        tx = nx + x
+                        ty = ny + y
+
+                        self.remove_road(info, (tx, ty))
+
+            self.last_mouse2 = None
+
 
 
     def remove_road(self, info, pos):

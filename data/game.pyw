@@ -91,10 +91,6 @@ def run():
     road_handler = roads.Handler()
 
     # Make popups
-
-    # DO NOT DELETE ME
-    popups.all['remove'] = popups.Button('remove', image.load('images//popup_icons//x.png'), image.load('images//popup_icons//x_invert.png'), 'Remove roads', -1, -1, base = True)
-
     popups.update(info)
 
     # -----------
@@ -178,11 +174,12 @@ def run():
         # Show grid lines
         if info['hidden_items']: show_grid_lines(info['game_window'], info)
 
-        # Draw lines
-        road_handler.draw(info)
-
+        # Show lines
         for img in road_handler.update(info): extras.show_things.append(img)
         extras.show_everthing(info)
+
+        # Draw lines
+        road_handler.draw(info)
 
         # Add the game window to the main
         info['main_window'].blit(info['game_window'], info['window']['pos'])
