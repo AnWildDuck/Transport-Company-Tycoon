@@ -1,5 +1,5 @@
 from pygame import *
-import extras, mouse_extras, roads, popups
+import extras, mouse_extras, roads, popups, math
 
 # Get the monitor size
 init()
@@ -22,6 +22,19 @@ def run():
         print('Error Loading settings file')
         print(error)
         return
+
+    # Load settings from 'user_data.txt'
+    # Requires user input so a nice error message is good
+    try:
+        file = open('user_data.txt', 'r')
+        user_info = dict(eval(file.read()))
+        file.close()
+    except Exception as error:
+        print('Error Loading user_info file')
+        print(error)
+        return
+
+    info['user_info'] = dict(user_info)
 
     # Add the monitor size to the info dict
     global monitor_size
@@ -74,6 +87,9 @@ def run():
             info['main_window'] = display.set_mode(info['window']['size'], RESIZABLE)
             info['is_fullscreen'] = False
 
+        # Make info surf
+        info['info_bar'] = Surface((info['window']['in_use_size'][0], info['window']['in_use_size'][1] * info['info_size']))
+
         return info
 
     # Without this pygame will stop
@@ -91,12 +107,16 @@ def run():
     road_handler = roads.Handler()
 
     # Make popups
+    # Road editor
+    popups.all['road_edit'] = popups.Button('road_edit', image.load('images//popup_icons//road_off.png'), image.load('images//popup_icons//road_on.png'), 'Road Editor', 0, 0, base = True)
     popups.update(info)
 
     # -----------
     #  Game Loop
     # -----------
 
+    # 0 = Build
+    stage = 0
 
     while True:
 
@@ -178,9 +198,6 @@ def run():
         for img in road_handler.update(info): extras.show_things.append(img)
         extras.show_everthing(info)
 
-        # Draw lines
-        road_handler.draw(info)
-
         # Add the game window to the main
         info['main_window'].blit(info['game_window'], info['window']['pos'])
 
@@ -195,6 +212,25 @@ def run():
 
         # This sets the name of the window, It is just showing cool info to make sure everythin is a-okay
         display.set_caption(info['window']['name'])
+
+        # Draw lines
+        if popups.all['road_edit'].clicked: road_handler.draw(info)
+
+        # Edit info bar
+        info['info_bar'].fill(info['info_bar_colour'])
+
+        # Update money
+        info = extras.update_money(info)
+
+        # Show meney
+        message = '$' + str(info['user_info']['money'])
+        size = info['window']['in_use_size'][1] * info['info_size']
+        x = size / 5
+        extras.show_message(info, message, (x, 0), size, colour = (255, 255, 255), background = False, margin = 0.2, alpha = 255, window_name = 'info_bar')
+
+        # Show info bar
+        pos = (0, math.ceil(info['window']['in_use_size'][1] - info['window']['in_use_size'][1] * info['info_size']))
+        info['main_window'].blit(info['info_bar'], pos)
 
         # Update the screen!
         display.update()

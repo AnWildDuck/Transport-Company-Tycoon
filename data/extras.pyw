@@ -1,17 +1,34 @@
 import time, pygame, math
 
-font = None
-font_size = None
-def show_message(info, message, pos, size, colour = (0, 0, 0), backround = (255, 255, 255), margin = 0.2, alpha = 255):
+change = 0
+def edit_money(c):
+    global change
+    change += c
+
+def update_money(info):
+    global change
+    info['user_info']['money'] += change
+    change = 0
+    return info
+
+
+fonts = {}
+def show_message(info, message, pos, size, colour = (0, 0, 0), background = (255, 255, 255), margin = 0.2, alpha = 255, window_name = 'main_window'):
     pos = list(pos)
 
-    global font, font_size
-    size = size * 0.8
+    global fonts
+    size = int(size * 0.8)
 
     # Change font if needed
-    if not font_size == size:
-        font_size = size
+
+    # Has the font been loaded?
+    try:
+        font = fonts[str(size)]
+    except:
+
+        # Load font
         font = pygame.font.SysFont('arial', int(size))
+        fonts[str(size)] = font
 
     message = font.render(message, 0, colour)
 
@@ -19,15 +36,19 @@ def show_message(info, message, pos, size, colour = (0, 0, 0), backround = (255,
     mes_rect = message.get_rect()
 
     new_rect = pos[0], pos[1], mes_rect.width + 2 * margin, mes_rect.height + 2 * margin
-    window = pygame.Surface((new_rect[2], new_rect[3]))
 
     # Background rectangles
-    window.fill(backround)
-    pygame.draw.rect(window, colour, (0, 0, new_rect[2], new_rect[3]), int(max(1, size / 7)))
+    if background:
+        window = pygame.Surface((new_rect[2], new_rect[3]))
+        window.fill(background)
+        pygame.draw.rect(window, colour, (0, 0, new_rect[2], new_rect[3]), int(max(1, size / 7)))
 
-    # Message
-    window.blit(message, (margin, margin))
-    window.set_alpha(alpha)
+        # Message
+        window.blit(message, (margin, margin))
+        window.set_alpha(alpha)
+
+    else:
+        window = message
 
     # Make sure the message is on the window
     window_size = info['window']['in_use_size']
@@ -37,7 +58,7 @@ def show_message(info, message, pos, size, colour = (0, 0, 0), backround = (255,
     pos[0] = min(pos[0], window_size[0] - new_rect[2])
     pos[1] = min(pos[1], window_size[1] - new_rect[3])
 
-    info['main_window'].blit(window, pos)
+    info[window_name].blit(window, pos)
 
 
 def blit_alpha(target, source, location, opacity):
@@ -189,7 +210,6 @@ def add_info(message):
 
     global info
     info.append(message)
-
 
 def show_info(window):
     global base_font, info

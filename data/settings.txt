@@ -2,6 +2,7 @@
 
 'main_window': 'to be set',
 'game_window': 'to be set',
+'info_bar': 'to be set',
 
 'window': {
 	'size': (800, 400),
@@ -15,6 +16,8 @@
 	'in_use_size': 'to be set'
 	},
 	
+'user_info': 'to be set',
+'info_size': 0.075,
 'offset': [0, 0],
 'zoom': 0.9,
 'fullscreen': 0,
@@ -31,4 +34,5 @@
 # Colours
 'window_background': (50, 50, 50),
 'game_background': (150, 255, 100),
+'info_bar_colour': (100, 100, 100),
 }

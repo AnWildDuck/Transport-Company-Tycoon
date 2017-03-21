@@ -124,7 +124,7 @@ class New:
             if extras.touching(mouse_rect, rect):
 
                 # Show message
-                extras.show_message(info, obj.name, mouse_pos, width / 2, colour = (0, 0, 0), backround = (255, 255, 255), margin = 0.2, alpha = 180)
+                extras.show_message(info, obj.name, mouse_pos, width / 2, colour = (0, 0, 0), background = (255, 255, 255), margin = 0.2, alpha = 180)
 
                 # Is the icon clicked?
                 if mouse_extras.get_states()[0] == -1:
@@ -184,7 +184,7 @@ class Button:
 
         # Is the mouse over the item?
         if extras.touching(mouse_rect, (x, y, width, width)):
-            extras.show_message(info, self.name, mouse_pos, width / 2, colour = (0, 0, 0), backround = (255, 255, 255), margin = 0.2, alpha = 120)
+            extras.show_message(info, self.name, mouse_pos, width / 2, colour = (0, 0, 0), background = (255, 255, 255), margin = 0.2, alpha = 120)
 
             # Is the item clicked?
             if mouse_extras.get_states()[0] == -1:

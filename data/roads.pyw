@@ -5,7 +5,11 @@ import mouse_extras, popups, extras
 class Handler:
 
     def __init__(self):
-        self.roads = []
+
+        self.pos = []
+        self.outs = []
+        self.img_names = []
+        self.rots = []
 
         self.images = {
             'straight': image.load('images//roads//straight.png'),
@@ -13,6 +17,9 @@ class Handler:
             't_intersection': image.load('images//roads//t_intersection.png'),
             'cross_intersection': image.load('images//roads//cross_intersection.png'),
         }
+
+        self.road_cost = 10
+        self.refund_value = 8
 
     def update(self, info):
         return self.get_images(info)
@@ -47,6 +54,13 @@ class Handler:
 
                     value = 'blit', self.images['straight'], (pos[0] * scale, pos[1] * scale, scale, scale), rot, 150
                     extras.show_things.append(value)
+
+                # Show cost
+                pos = list(path[int(len(path) / 2)])
+                pos[0] *= info['window']['game_scale']; pos[1] *= info['window']['game_scale']
+                pos[0] = int(pos[0] + info['window']['pos'][0]); pos[1] = int(pos[1] + info['window']['pos'][1])
+                message = 'Cost: ' + str(self.road_cost * len(path))
+                extras.show_message(info, message, pos, 20, colour = (0, 0, 0), background = (255, 255, 255), margin = 0.2, alpha = 128)
 
         # Has the mouse been let go?
         else:
@@ -127,6 +141,23 @@ class Handler:
                 value = 'rect', (x * scale, y * scale, width * scale, height * scale), (255, 100, 100, 100)
                 extras.show_things.append(value)
 
+                amount = 0
+
+                # What is the refund value?
+                for nx in range(width):
+                    for ny in range(height):
+
+                        tx = nx + x
+                        ty = ny + y
+
+                        if (tx, ty) in self.pos:
+                            amount += 1
+
+                # Show refund value
+                value = amount * self.refund_value
+                message = 'Refund: ' + str(value)
+                extras.show_message(info, message, mouse.get_pos(), 20, colour = (0, 0, 0), background = (255, 255, 255), margin = 0.2, alpha = 255)
+
 
         # Has the mouse been let go
         else:
@@ -151,23 +182,20 @@ class Handler:
             self.last_mouse2 = None
 
 
-
     def remove_road(self, info, pos):
 
-        # Is the mouse even on the game surface
-        if pos[0] >= 0 and pos[1] >= 0:
-            if pos[0] < info['grid_size'] and pos[1] < info['grid_size']:
+        # Find index
+        if tuple(pos) in self.pos:
+            index = self.pos.index(tuple(pos))
 
-                # Is a road there?
-                for stuff in self.roads:
-                    position, outs, rot, name = stuff
-                    if tuple(pos) == tuple(position):
+            # Remove from all lists
+            self.pos.pop(index)
+            self.outs.pop(index)
+            self.img_names.pop(index)
+            self.rots.pop(index)
 
-                        # Remove it
-                        index = self.roads.index(stuff)
-                        self.roads.pop(index)
-                        self.update_neighbours(info, pos)
-                        return
+            self.update_neighbours(info, pos)
+            extras.edit_money(self.refund_value)
 
 
     def add_road(self, info, pos):
@@ -177,19 +205,16 @@ class Handler:
             if pos[0] < info['grid_size'] and pos[1] < info['grid_size']:
 
                 # Is there another road in the way?
-                okay = True
-                for stuff in self.roads:
-                    position, outs, rot, name = stuff
-                    if tuple(pos) == tuple(position):
-
-                        okay = False
-                        break
-
-                if okay:
+                if not tuple(pos) in self.pos:
                     # Add roads
 
                     # Add a blank road to the list
-                    self.roads.append((pos, 0, 0, 0))
+                    self.pos.append(tuple(pos))
+                    self.rots.append(0)
+                    self.outs.append(0)
+                    self.img_names.append(0)
+
+                    extras.edit_money(-self.road_cost)
 
                     # Update the road
                     self.update_road(pos, info)
@@ -215,7 +240,11 @@ class Handler:
         width = info['window']['game_scale']
 
         # Format = 'blit', img, rect, rotation
-        for position, outs, rotation, img_name in self.roads:
+        for index in range(len(self.pos)):
+
+            position = self.pos[index]
+            img_name = self.img_names[index]
+            rotation = self.rots[index]
 
             pos = position[0] * width, position[1] * width
             rect = int(pos[0]), int(pos[1]), width, width
@@ -227,10 +256,8 @@ class Handler:
     def update_road(self, pos, info):
 
         # Find the index of the position
-        index = None
-        for road in self.roads:
-            if tuple(road[0]) == tuple(pos):
-                index = self.roads.index(road)
+        if tuple(pos) in self.pos: index = self.pos.index(tuple(pos))
+        else: index = None
 
         if not index == None:
 
@@ -249,14 +276,13 @@ class Handler:
                 if new_pos[0] >= 0 and new_pos[1] >= 0 and new_pos[0] < info['grid_size'] and new_pos[1] < info['grid_size']:
 
                     # Is there a road with this pos
-                    for road in self.roads:
-                        if tuple(road[0]) == tuple(new_pos):
+                    if tuple(new_pos) in self.pos:
 
-                            # What direction is it?
-                            if change_index == 0: up = True
-                            elif change_index == 1: right = True
-                            elif change_index == 2: left = True
-                            else: down = True
+                        # What direction is it?
+                        if change_index == 0: up = True
+                        elif change_index == 1: right = True
+                        elif change_index == 2: left = True
+                        else: down = True
 
             neighbours = int(up) + int(down) + int(left) + int(right)
 
@@ -307,4 +333,7 @@ class Handler:
                 road_img = 'straight'
                 rotation = 0
 
-            self.roads[index] = pos, neighbours, rotation, road_img
+            self.pos[index] = tuple(pos)
+            self.img_names[index] = road_img
+            self.outs[index] = neighbours
+            self.rots[index] = rotation
