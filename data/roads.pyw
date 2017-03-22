@@ -18,8 +18,8 @@ class Handler:
             'cross_intersection': image.load('images//roads//cross_intersection.png'),
         }
 
-        self.road_cost = 10
-        self.refund_value = 8
+        self.road_cost = 5
+        self.refund_value = self.road_cost
 
     def update(self, info):
         return self.get_images(info)
@@ -36,13 +36,30 @@ class Handler:
             # Is this the first click?
             if not self.mouse_last:
 
-                # Remember this position
-                self.mouse_last = mouse_grid
+                # Is this valid pos?
+                if mouse_grid[0] >= 0 and mouse_grid[0] < info['grid_size'] and mouse_grid[1] >= 0 and mouse_grid[1] < info['grid_size']:
+
+                    # Remember this position
+                    self.mouse_last = mouse_grid
 
             # Has the mouse already been clicked?
             else:
+
+                # Correct pos
+                mouse_grid[0] = max(min(mouse_grid[0], info['grid_size']), 0)
+                mouse_grid[1] = max(min(mouse_grid[1], info['grid_size']), 0)
+
                 # Add rects to show the path
                 path = extras.make_line(self.mouse_last, mouse_grid)
+
+                # Does the player have enough money?
+                cost = self.road_cost * len(path)
+
+                if cost > info['user_info']['money']:
+                    colour = (255, 0, 0, 50)
+                else:
+                    colour = False
+
 
                 if len(path) > 1:
                     if path[0][0] == path[1][0]: rot = 0
@@ -53,6 +70,21 @@ class Handler:
                     scale = info['window']['game_scale']
 
                     value = 'blit', self.images['straight'], (pos[0] * scale, pos[1] * scale, scale, scale), rot, 150
+                    extras.show_things.append(value)
+                    
+                if colour:
+                    fpos = path[0]
+                    lpos = path[len(path) - 1]
+
+                    x = min(fpos[0], lpos[0])
+                    y = min(fpos[1], lpos[1])
+
+                    width = abs(fpos[0] - lpos[0]) + 1
+                    height = abs(fpos[1] - lpos[1]) + 1
+
+                    rect = (x * scale, y * scale, width * scale, height * scale)
+
+                    value = 'rect', rect, colour
                     extras.show_things.append(value)
 
                 # Show cost
@@ -71,9 +103,12 @@ class Handler:
                 # Make line between mouse position and where the mouse was first clicked
                 path = extras.make_line(self.mouse_last, mouse_grid)
 
-                # Add to roads
-                for pos in path:
-                    self.add_road(info, pos)
+                # Does the user have enough money
+                if self.road_cost * len(path) <= info['user_info']['money']:
+ 
+                    # Add to roads
+                    for pos in path:
+                        self.add_road(info, pos)
             
             # Reset
             self.mouse_last = None
@@ -117,6 +152,9 @@ class Handler:
     def remove_section(self, info):
 
         new_pos = mouse_extras.get_pos()
+
+        new_pos[0] = max(min(new_pos[0], info['grid_size']), 0)
+        new_pos[1] = max(min(new_pos[1], info['grid_size']), 0)
 
         # Is the mouse clicked?
         if mouse.get_pressed()[2]:

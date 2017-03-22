@@ -118,6 +118,7 @@ def run():
     # 0 = Build
     stage = 0
 
+
     while True:
 
         # dt or delta time is used to make things move at the correct speed when fps changes
@@ -210,7 +211,7 @@ def run():
         # Cool info things
         if info['hidden_info']: extras.show_info(info['main_window'])
 
-        # This sets the name of the window, It is just showing cool info to make sure everythin is a-okay
+        # This sets the name of the window, It is just showing cool info to make sure everything is a-okay
         display.set_caption(info['window']['name'])
 
         # Draw lines

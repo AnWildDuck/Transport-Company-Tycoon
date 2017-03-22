@@ -154,7 +154,8 @@ class Button:
         self.y = y
         self.layer = layer
         self.clicked = False
-        self.last_click = False
+        self.just_clicked = False
+        self.last_clicked = False
         self.base = base
 
 
@@ -182,6 +183,8 @@ class Button:
         mouse_pos = mouse.get_pos()
         mouse_rect = (mouse_pos[0], mouse_pos[1], 0, 0)
 
+        self.just_clicked = False
+
         # Is the mouse over the item?
         if extras.touching(mouse_rect, (x, y, width, width)):
             extras.show_message(info, self.name, mouse_pos, width / 2, colour = (0, 0, 0), background = (255, 255, 255), margin = 0.2, alpha = 120)
@@ -189,6 +192,7 @@ class Button:
             # Is the item clicked?
             if mouse_extras.get_states()[0] == -1:
                 self.clicked = abs(int(self.clicked) - 1)
+                self.just_clicked = True
 
         return (x, y, width, width)
 
