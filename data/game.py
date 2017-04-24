@@ -1,5 +1,5 @@
 from pygame import *
-import extras, mouse_extras, roads, popups, math, houses
+import extras, mouse_extras, roads, popups, math, houses, sys
 
 # Get the monitor size
 init()
@@ -96,7 +96,14 @@ def run():
     def event_loop():
         events = event.get()
         for i in events:
-            if i.type == QUIT: quit()
+            if i.type == QUIT:
+
+                print(road_handler.pos)
+                print(road_handler.outs)
+                print(road_handler.img_names)
+
+                quit()
+                sys.exit()
         return events
 
     # Set up

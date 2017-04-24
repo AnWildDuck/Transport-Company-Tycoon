@@ -6,7 +6,7 @@ Start and end are positions
 All Positions are in the format (x, y)
 '''
 
-def find_path(nodes, start, end):
+def path(nodes, start, end):
 
     # Candidates to be stored as [(pos, parent pos, cost)]
     start_candidate = start, None, 0
@@ -82,17 +82,44 @@ def find_path(nodes, start, end):
 
         # Add parent to path
         path.append(parent)
-
     return path
 
 
-nodes = {
-    (0,0): [(1,0),(0,1)],
-    (1,0): [(1,1), (2,0), (0,0)],
-    (2,0): [(2,1)],
-}
+# positions in format [(x,y),]
+def sort_nodes(positions, neighbours, img_names): # All inputs are just lists inside of the road handler
+    nodes = {}
 
-start = (0,0)
-end = (2,0)
+    # A road will become a node if it is a corner, intersection or cul-de-sac
+    for index in range(len(positions)):
 
-print(find_path(nodes, start, end))
+        pos = positions[index]
+        outs = neighbours[index]
+        img_name = img_names[index]
+
+        neighbouring_pos = [] # Keep track of all positions that can be reached from the current pos
+
+        # Do we care about this?
+        if img_name != 'straight' or outs != 2:
+
+            # For each direction
+            for xc, yc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+
+                ext_pos = list(pos)
+                while True:
+
+                    # Move ext_pos in direction
+                    last_pos = list(ext_pos)
+                    ext_pos[0] += xc
+                    ext_pos[1] += yc
+
+                    # Is it still valid?
+                    if ext_pos in positions:
+                        continue
+
+                    else: # This is the end of the road
+                        neighbouring_pos.append(last_pos)
+                        break
+
+            # Add to nodes
+            nodes[pos] = neighbouring_pos
+    return nodes
