@@ -98,9 +98,9 @@ def run():
         for i in events:
             if i.type == QUIT:
 
-                print(road_handler.pos)
-                print(road_handler.outs)
-                print(road_handler.img_names)
+                # print(road_handler.pos)
+                # print(road_handler.outs)
+                # print(road_handler.img_names)
 
                 quit()
                 sys.exit()
@@ -161,6 +161,11 @@ def run():
                 if e.key == K_ESCAPE:
                     info['fullscreen'] = 0
                     info = resize_main(info)
+
+                if e.key == K_RETURN:
+                    import pathfinder
+                    print(pathfinder.find_path(road_handler, (0,0), (0,3)))
+
 
                 if e.key == K_F2:
                     info['hidden_info'] = abs(int(info['hidden_info'] - 1))

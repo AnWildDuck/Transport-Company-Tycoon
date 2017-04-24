@@ -6,7 +6,38 @@ Start and end are positions
 All Positions are in the format (x, y)
 '''
 
-def path(nodes, start, end):
+def find_path(road_handler, start, end):
+
+    pos = road_handler.pos
+    outs = road_handler.outs
+    names = road_handler.img_names
+
+    # Is the start next to a road?
+    valid = False
+    for xc, yc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+        new_pos = start[0] + xc, start[1] + yc
+        if new_pos in pos: valid = True; break
+
+    # Is the end next to a road?
+    for xc, yc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
+        new_end = end[0] + xc, end[1] + yc
+        if new_end in pos: valid = True; break
+
+    if not valid: return False
+
+    nodes = sort_nodes(pos, outs, names)
+    path = get_path(nodes, new_pos, new_end)
+
+    if path:
+        path.append(start)
+        path.reverse()
+        path.append(end)
+
+
+    return path
+
+
+def get_path(nodes, start, end):
 
     # Candidates to be stored as [(pos, parent pos, cost)]
     start_candidate = start, None, 0
@@ -117,8 +148,9 @@ def sort_nodes(positions, neighbours, img_names): # All inputs are just lists in
                         continue
 
                     else: # This is the end of the road
-                        neighbouring_pos.append(last_pos)
-                        break
+                        if not tuple(last_pos) in positions:
+                            neighbouring_pos.append((last_pos[0] - xc, last_pos[1] - yc))
+                            break
 
             # Add to nodes
             nodes[pos] = neighbouring_pos
