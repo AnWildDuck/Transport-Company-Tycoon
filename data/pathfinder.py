@@ -33,7 +33,6 @@ def find_path(road_handler, start, end):
         path.reverse()
         path.append(end)
 
-
     return path
 
 
