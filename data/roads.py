@@ -46,8 +46,8 @@ class Handler:
             else:
 
                 # Correct pos
-                mouse_grid[0] = max(min(mouse_grid[0], info['grid_size']), 0)
-                mouse_grid[1] = max(min(mouse_grid[1], info['grid_size']), 0)
+                mouse_grid[0] = max(min(mouse_grid[0], info['grid_size'] - 1), 0)
+                mouse_grid[1] = max(min(mouse_grid[1], info['grid_size'] - 1), 0)
 
                 # Add rects to show the path
                 path = extras.make_line(self.mouse_last, mouse_grid)

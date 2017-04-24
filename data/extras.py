@@ -13,8 +13,11 @@ def update_money(info):
 
 
 fonts = {}
-def show_message(info, message, pos, size, colour = (0, 0, 0), background = (255, 255, 255), margin = 0.2, alpha = 255, window_name = 'main_window'):
+def show_message(info, message, pos, size, colour = (0, 0, 0), background = (255, 255, 255), margin = 0.2, alpha = 255, window_name = 'main_window', side = 'left'):
     pos = list(pos)
+    
+    rect = info[window_name].get_rect()
+    window_size = rect.width, rect.height
 
     global fonts
     size = int(size * 0.8)
@@ -57,6 +60,8 @@ def show_message(info, message, pos, size, colour = (0, 0, 0), background = (255
 
     pos[0] = min(pos[0], window_size[0] - new_rect[2])
     pos[1] = min(pos[1], window_size[1] - new_rect[3])
+
+    if side == 'right': pos[0] = window_size[0] - margin - mes_rect.width
 
     info[window_name].blit(window, pos)
 

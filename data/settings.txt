@@ -16,13 +16,16 @@
 	'in_use_size': 'to be set'
 	},
 	
+'used_pos': [],
 'user_info': 'to be set',
 'info_size': 0.075,
 'offset': [0, 0],
 'zoom': 0.9,
 'fullscreen': 0,
 'is_fullscreen': 0,
-'grid_size': 50,
+'grid_size': 20,
+
+'popups': [],
 
 'events': 'to be set',
 'mouse_rel': 'to be set',

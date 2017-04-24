@@ -1,5 +1,5 @@
 from pygame import *
-import extras, mouse_extras, roads, popups, math
+import extras, mouse_extras, roads, popups, math, houses
 
 # Get the monitor size
 init()
@@ -105,10 +105,15 @@ def run():
 
     # Objects
     road_handler = roads.Handler()
+    house_handler = houses.Handler()
 
     # Make popups
     # Road editor
     popups.all['road_edit'] = popups.Button('road_edit', image.load('images//popup_icons//road_off.png'), image.load('images//popup_icons//road_on.png'), 'Road Editor', 0, 0, base = True)
+
+    # Time Pause
+    popups.all['pause'] = popups.Button('pause', image.load('images//popup_icons//road_off.png'), image.load('images//popup_icons//road_on.png'), 'Game Time', 0, 4, base = True)
+
     popups.update(info)
 
     # -----------
@@ -118,14 +123,23 @@ def run():
     # 0 = Build
     stage = 0
 
-
+    # NOT PAUSE BUTTON, This dictates whether the game time is paused, NOT whether the pause menu is up
     while True:
+
+        # Update popups reference
+        info['popups'] = popups.all
 
         # dt or delta time is used to make things move at the correct speed when fps changes
         info['dt'] = clock.tick() / 1000
+        if popups.all['pause'].clicked: info['dt'] = 0
 
         info['events'] = event_loop()
         mouse_extras.update(info)
+
+        # Update used positions
+        info['used_pos'] = []
+        for pos in road_handler.pos: info['used_pos'].append((pos, 'road'))
+        for pos in house_handler.houses: info['used_pos'].append((pos, 'house'))
 
         for e in info['events']:
 
@@ -181,7 +195,6 @@ def run():
             info['offset'][0] += info['mouse_rel'][0]
             info['offset'][1] += info['mouse_rel'][1]
 
-
         info = update_pixel_size(info)
 
         # Window Background
@@ -195,8 +208,13 @@ def run():
         # Show grid lines
         if info['hidden_items']: show_grid_lines(info['game_window'], info)
 
-        # Show lines
+        # Show roads
         for img in road_handler.update(info): extras.show_things.append(img)
+
+        # Update Houses
+        house_handler.update(info)
+
+        # Show everything
         extras.show_everthing(info)
 
         # Add the game window to the main
@@ -223,11 +241,17 @@ def run():
         # Update money
         info = extras.update_money(info)
 
-        # Show meney
+        # Show money
         message = '$' + str(info['user_info']['money'])
         size = info['window']['in_use_size'][1] * info['info_size']
         x = size / 5
         extras.show_message(info, message, (x, 0), size, colour = (255, 255, 255), background = False, margin = 0.2, alpha = 255, window_name = 'info_bar')
+
+        # Show town rep
+        message = str(user_info['town_rep'])
+        size = info['window']['in_use_size'][1] * info['info_size']
+        x = size / 5
+        extras.show_message(info, message, (x, 0), size, colour = (255, 255, 255), background = False, margin = 0.2, alpha = 255, window_name = 'info_bar', side = 'right')
 
         # Show info bar
         pos = (0, math.ceil(info['window']['in_use_size'][1] - info['window']['in_use_size'][1] * info['info_size']))

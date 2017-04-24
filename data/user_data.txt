@@ -1,5 +1,5 @@
 {
 'money': 1000,
-'pop': 0,
-
+'pop': 10,
+'town_rep': 'Town rep lmao',
 }
