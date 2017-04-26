@@ -1,156 +1,103 @@
+import pygame, time
 
-'''
-Nodes = {Pos: Neighbours,}
-Start and end are positions
+def get_neighbours(pos): return [(pos[0] + c[0], pos[1] + c[1]) for c in [(0,1),(0,-1),(1,0),(-1,0)]]
 
-All Positions are in the format (x, y)
-'''
+def find_path(road_handler, start, end, info):
 
-def find_path(road_handler, start, end):
+    # Show start and end
+    for item in []: # [start, end]:
+        pygame.draw.circle(info['game_window'], (0, 0, 255), (int((item[0] + 0.5) * info['window']['game_scale']), int((item[1] + 0.5) * info['window']['game_scale'])), 5)
 
-    pos = road_handler.pos
-    outs = road_handler.outs
-    names = road_handler.img_names
+    nodes = road_handler.pos + [start, end]
+    return make_path(nodes, start, end)
 
-    # Is the start next to a road?
-    valid = False
-    for xc, yc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
-        new_pos = start[0] + xc, start[1] + yc
-        if new_pos in pos: valid = True; break
+def make_path(nodes, start, end):
 
-    # Is the end next to a road?
-    for xc, yc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
-        new_end = end[0] + xc, end[1] + yc
-        if new_end in pos: valid = True; break
+    ends = get_neighbours(end)
 
-    if not valid: return False
+    # Candidates stored as (Pos, Parent)
 
-    nodes = sort_nodes(pos, outs, names)
-    path = get_path(nodes, new_pos, new_end)
+    start_neighbours = get_neighbours(start)
+    candidates = []
+    for item in start_neighbours:
+        candidates.append((item, None))
 
-    if path:
-        path.append(start)
-        path.reverse()
-        path.append(end)
-
-    return path
-
-
-def get_path(nodes, start, end):
-
-    # Candidates to be stored as [(pos, parent pos, cost)]
-    start_candidate = start, None, 0
-    candidates = [start_candidate]
-
-    # Positions with all calculations done
-    # In format [(pos, parent pos, cost)], same as candidates
     calculated_pos = []
 
-    while True: # Loop through all candidates
-        stop = False
-
-        # Sort candidates by cost (Low to high)
-        candidates.sort(key = lambda x: x[2])
-
-        # Has the end been found?
-        for item in calculated_pos:
-            if item[0] == end:
-                stop = True
-                break
-
-        # Extra stop variable needed because 'break' only works inside one loop
-        if stop: break
+    while True:
 
         # Are there no more options?
         if len(candidates) == 0:
+            # print()
+            # for i in calculated_pos: print(i)
             return False
 
-        # Choose position to search
+        # Have we finished?
+        finished = False
+        for item in calculated_pos:
+            if item[0] in ends:
+                end_node = item
+                finished = True
+                break
+        if finished: break
+
         candidate = candidates[0]
 
-        # Does it have any neighbours?
-        if candidate[0] in nodes:
+        # Find neighbours
+        neighbours = get_neighbours(candidate[0])
+        valid_neighbours = []
+        for pos in neighbours:
+            if pos in nodes:
+                valid_neighbours.append(pos)
 
-            # What are its neighbours?
-            neighbours = nodes[candidate[0]]
+        # Add neighbours to candidates
+        for item in valid_neighbours:
 
-            # Add neighbours to candidates
-            for pos in neighbours:
+            # Has this item already been looked at?
+            okay = True
+            for node in candidates + calculated_pos:
+                if node[0] == item:
+                    okay = False; break
 
-                # Work out cost to get to here
-                last_change = abs(candidate[0][0] - pos[0]) + abs(candidate[0][1] - pos[1])
-                cost = last_change + candidate[2]
-
-                # Has this new position already been worked out?
-                searched_pos = [i[0] for i in calculated_pos + candidates]
-
-                if not pos in searched_pos:
-                    value = pos, candidate[0], cost
-
-                    # Add
-                    candidates.append(value)
+            if okay:
+                candidates.append((item, candidate[0]))
 
         # Add candidate to calculated_pos
         calculated_pos.append(candidate)
 
-        # Remove from candidates
+        # Remove candidate from candidates
         candidates.pop(0)
 
     # Backtrack to find path
-    path = [end]
+    path = [end_node]
+
     while True:
 
-        # Have we made it back?
-        if start in path: break
+        # Is the path finished?
+        finished = False
+        for pos in start_neighbours:
+            for item in path:
+                if item[0] == pos:
+                    finished = True
+                    break
+        if finished: break
 
-        last_pos = path[len(path) - 1]
+        last_node = path[len(path) - 1]
+        parent = last_node[1]
 
-        # Find parent
         for item in calculated_pos:
-            if item[0] == last_pos:
-                parent = item[1]
+            if item[0] == parent:
+                if not item in path:
+                    path.append(item)
+                    break
 
-        # Add parent to path
-        path.append(parent)
-    return path
+    # Format path
+    new_path = []
+    for item in path:
+        new_path.append(item[0])
 
+    new_path.append(start)
+    new_path.reverse()
+    new_path.append(end)
+    return new_path
 
-# positions in format [(x,y),]
-def sort_nodes(positions, neighbours, img_names): # All inputs are just lists inside of the road handler
-    nodes = {}
-
-    # A road will become a node if it is a corner, intersection or cul-de-sac
-    for index in range(len(positions)):
-
-        pos = positions[index]
-        outs = neighbours[index]
-        img_name = img_names[index]
-
-        neighbouring_pos = [] # Keep track of all positions that can be reached from the current pos
-
-        # Do we care about this?
-        if img_name != 'straight' or outs != 2:
-
-            # For each direction
-            for xc, yc in [(0, 1), (0, -1), (1, 0), (-1, 0)]:
-
-                ext_pos = list(pos)
-                while True:
-
-                    # Move ext_pos in direction
-                    last_pos = list(ext_pos)
-                    ext_pos[0] += xc
-                    ext_pos[1] += yc
-
-                    # Is it still valid?
-                    if ext_pos in positions:
-                        continue
-
-                    else: # This is the end of the road
-                        if not tuple(last_pos) in positions:
-                            neighbouring_pos.append((last_pos[0] - xc, last_pos[1] - yc))
-                            break
-
-            # Add to nodes
-            nodes[pos] = neighbouring_pos
-    return nodes

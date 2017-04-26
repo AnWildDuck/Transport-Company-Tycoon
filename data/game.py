@@ -130,7 +130,8 @@ def run():
     # 0 = Build
     stage = 0
 
-    # NOT PAUSE BUTTON, This dictates whether the game time is paused, NOT whether the pause menu is up
+    path = False
+
     while True:
 
         # Update popups reference
@@ -161,10 +162,6 @@ def run():
                 if e.key == K_ESCAPE:
                     info['fullscreen'] = 0
                     info = resize_main(info)
-
-                if e.key == K_RETURN:
-                    import pathfinder
-                    print(pathfinder.find_path(road_handler, (0,0), (0,3)))
 
 
                 if e.key == K_F2:
@@ -242,7 +239,7 @@ def run():
         if info['hidden_info']: extras.show_info(info['main_window'])
 
         # This sets the name of the window, It is just showing cool info to make sure everything is a-okay
-        display.set_caption(info['window']['name'])
+        # display.set_caption(info['window']['name'])
 
         # Draw lines
         if popups.all['road_edit'].clicked: road_handler.draw(info)
@@ -271,5 +268,7 @@ def run():
 
         # Update the screen!
         display.update()
+
+        display.set_caption(str(mouse_extras.get_pos()))
 
 run()
